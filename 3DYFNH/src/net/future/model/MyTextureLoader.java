@@ -21,7 +21,6 @@ public class MyTextureLoader
 				texture = TextureLoader.getTexture("JPG", new FileInputStream(new File(location)));
 			else
 				System.err.println("Texture File At " + location + " is not a supported image type");
-				
 			return texture;
 		} 
 		catch (FileNotFoundException e) 

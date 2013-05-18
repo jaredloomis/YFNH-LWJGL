@@ -1,9 +1,9 @@
 package net.future.model;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
-
-
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 import org.newdawn.slick.opengl.Texture;
 
@@ -20,6 +20,9 @@ public class Model
 	public int vboVertexHandle;
 	public int vboNormalHandle;
 	public int vboTexHandle;
+	public FloatBuffer vertex;
+	public FloatBuffer normal;
+	public FloatBuffer text;
 
 	public float shininess;
 
@@ -30,12 +33,32 @@ public class Model
 
 	public Model setUpVBO() 
 	{
-		int[] vbos = OBJLoader.createVBO(this);
-		this.vboVertexHandle = vbos[0];
-		this.vboNormalHandle = vbos[1];
-		this.vboTexHandle = vbos[2];
+		//TODO REMOVE THIS!!!!
+		this.setDefaultTextCoords();
+		Object[][] vbos = OBJLoader.createVBO(this);
+		this.vboVertexHandle = (int)vbos[0][0];
+		this.vboNormalHandle = (int)vbos[1][0];
+		this.vboTexHandle = (int)vbos[2][0];
+		this.vertex = (FloatBuffer)vbos[0][1];
+		this.normal = (FloatBuffer)vbos[1][1];
+		this.text = (FloatBuffer)vbos[2][1];
 
 		return this;
+	}
+
+	public void setDefaultTextCoords()
+	{
+		for(int i = 0; i < this.faces.size(); i++)
+		{
+			Face f = this.faces.get(i);
+
+			f.textureCoords = new Vector2f[]
+					{
+					new Vector2f(0, 0),
+					new Vector2f(1, 0),
+					new Vector2f(1, 1)
+					};
+		}
 	}
 
 	public Model setTexture(String texturePath)
@@ -53,6 +76,7 @@ public class Model
 
 	public Model setShininess(float shiny)
 	{
+		//Not neccessary, could remove...
 		GL11.glMaterialf(GL11.GL_FRONT, GL11.GL_SHININESS, shiny);
 		this.shininess = shiny;
 		return this;
@@ -63,10 +87,37 @@ public class Model
 		this.name = newN;
 		return this;
 	}
-
+	
+	/**
+	 * Just setting the scale variable of the model
+	 * makes the collision detection and width, height
+	 * of the model completely wrong, so I just each of the 
+	 * point's positions to the specified scale
+	 */
 	public Model setScale(float s)
 	{
-		this.scale = s;
+		if(s==0||s==1)
+			return this;
+		//this.scale = s;
+		for(int i = 0; i < this.faces.size(); i++)
+		{
+			for(int j = 0; j < this.faces.get(i).points.length; j++)
+			{
+				//Update position of each point
+				Vector3f cur = this.faces.get(i).points[j];
+				this.faces.get(i).points[j] = new Vector3f(cur.x*s, cur.y*s, cur.z*s);
+			}
+			
+			//Update AABB of face
+			Face f = this.faces.get(i);
+			Vector3f min = new Vector3f(f.boundingBox.min.x*s, f.boundingBox.min.y*s, f.boundingBox.min.z*s);
+			Vector3f max = new Vector3f(f.boundingBox.max.x*s, f.boundingBox.max.y*s, f.boundingBox.max.z*s);
+			f.boundingBox = new AABB(min, max);
+		}
+		//Update AABB of model
+		Vector3f min = new Vector3f(this.boundingBox.min.x*s, this.boundingBox.min.y*s, this.boundingBox.min.z*s);
+		Vector3f max = new Vector3f(this.boundingBox.max.x*s, this.boundingBox.max.y*s, this.boundingBox.max.z*s);
+		this.boundingBox = new AABB(min, max);
 		return this;
 	}
 

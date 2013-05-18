@@ -22,5 +22,6 @@ void main()
     
     // Send the vertex position, modified by glTranslate/glRotate/glScale
     // and glOrtho/glFrustum/gluPerspective to primitive assembly.
+    //gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
     gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 }

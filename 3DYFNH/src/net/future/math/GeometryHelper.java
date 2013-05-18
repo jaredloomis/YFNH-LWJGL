@@ -2,6 +2,7 @@ package net.future.math;
 import java.util.List;
 
 import net.future.gameobject.GameObject;
+import net.future.helper.Debug;
 import net.future.model.AABB;
 import net.future.model.Face;
 import net.future.model.Model;
@@ -71,11 +72,9 @@ public class GeometryHelper
 	 * @return <b>true</b> if the two GameObjects will intersect
 	 */
 	public static boolean willIntersect(GameObject mover, GameObject collide, Vector3f newPos)
-	{	
-		System.out.println(mover.getName());
-		//GameObject newOne = new ObjectCube(mover.world);
+	{
 		GameObject newOne = new GameObject(mover);
-		//newOne.model = mover.model;
+		
 		newOne.position = newPos;
 
 		return intersecting(newOne, collide);
@@ -89,122 +88,46 @@ public class GeometryHelper
 		return true;
 	}
 
+	/**
+	 * Checks if the AABBs of 2 GameObjects are intersecting
+	 */
 	public static boolean intersecting(GameObject obj1, GameObject obj2)
 	{
-		if(true)
-		{
-			Model m1 = obj1.model;
-			Model m2 = obj2.model;
-			AABB ab1 = m1.boundingBox;
-			AABB ab2 = m2.boundingBox;
-			
-			AABB adjAB1 = new AABB(Vector3f.add(ab1.min, obj1.position, null),
-								   Vector3f.add(ab1.max, obj1.position, null));
-			
-			AABB adjAB2 = new AABB(Vector3f.add(ab2.min, obj2.position, null), 
-								   Vector3f.add(ab2.max, obj2.position, null));
-			
-			if(adjAB1.intersecting(adjAB2)) return true;
-			
-			return false;
-		}
-		else if(obj1.model != null && obj2.model != null)
-		{
-			//System.out.println("asdf");
-			Model mod2=obj2.model;
-			Model mod1=obj1.model;
+		Model m2=obj2.model;
+		Model m1=obj1.model;
 
-			//Loop through the faces of the first object's model
-			for (int i = 0; i < mod1.faces.size(); i++)
+		if(false)
+		{
+			AABB adjAB1 = new AABB(obj1.model.boundingBox, obj1.position);
+			AABB adjAB2 = new AABB(obj2.model.boundingBox, obj2.position);
+			
+			if(adjAB1.intersecting(adjAB2))
 			{
-				Face f1 = mod1.faces.get(i);
-				AABB ab1 = f1.boundingBox;
-				Vector3f adjMin1 = Vector3f.add(obj1.position, ab1.min, null);
-				Vector3f adjMax1 = Vector3f.add(obj1.position, ab1.max, null);
-				AABB adjAB1 = new AABB(adjMin1, adjMax1);
+				System.out.println(adjAB1);
+				System.out.println(adjAB2);
+				return true;
+			}
+		}
+		else
+		{
+			//Loop through the faces of the first object's model
+			for (int i = 0; i < m1.faces.size(); i++)
+			{
+				Face f1 = m1.faces.get(i);
+				AABB adjAB1 = new AABB(f1.boundingBox, obj1.position);
 
 				//Loop through the faces of the second object's model
-				for(int j = 0; j < mod2.faces.size(); j++)
+				for(int j = 0; j < m2.faces.size(); j++)
 				{
-					Face f2 = mod2.faces.get(j);
-					AABB ab2 = f2.boundingBox;
-					Vector3f adjMin2 = Vector3f.add(obj2.position, ab2.min, null);
-					Vector3f adjMax2 = Vector3f.add(obj2.position, ab2.max, null);
-					AABB adjAB2 = new AABB(adjMin2, adjMax2);
+					Face f2 = m2.faces.get(j);
+					AABB adjAB2 = new AABB(f2.boundingBox, obj2.position);
 
-					float length1 = Math.abs(adjMax1.x-adjMin1.x);
-					float width1 = Math.abs(adjMax1.y-adjMin1.y);
-					float height1 = Math.abs(adjMax1.z-adjMin1.z);
-
-					float length2 = Math.abs(adjMax2.x-adjMin2.x);
-					float width2 = Math.abs(adjMax2.y-adjMin2.y);
-					float height2 = Math.abs(adjMax2.z-adjMin2.z);
-
-					if(faceCollide(f1, obj1.position, length1, width1, height1, f2, obj2.position, length2, width2, height2))
-						return true;
-
-					/*
 					if(adjAB1.intersecting(adjAB2))
-					{
 						return true;
-					}*/
 				}
 			}
 		}
-		else if(obj2.model != null)
-		{
-			Model mod2=obj2.model;
-
-			AABB ab1 = new AABB(new Vector3f(0, 0, 0), new Vector3f(0.3f, 0.3f, 0.3f));
-			Vector3f adjMin1 = Vector3f.add(obj1.position, ab1.min, null);
-			Vector3f adjMax1 = Vector3f.add(obj1.position, ab1.max, null);
-			AABB adjAB1 = new AABB(adjMin1, adjMax1);
-
-			//Loop through the faces of the second object's model
-			for(int j = 0; j < mod2.faces.size(); j++)
-			{
-				//AABB ab1 = new AABB(f1);
-				Face f2 = mod2.faces.get(j);
-				AABB ab2 = f2.boundingBox;
-				Vector3f adjMin2 = Vector3f.add(obj1.position, ab2.min, null);
-				Vector3f adjMax2 = Vector3f.add(obj1.position, ab2.max, null);
-				AABB adjAB2 = new AABB(adjMin2, adjMax2);
-
-				if(adjAB1.intersecting(adjAB2))
-				{
-					return true;
-				}
-			}
-		}
-		else if(obj1.model != null)
-		{
-			Model mod1=obj1.model;
-
-			AABB ab2 = new AABB(new Vector3f(0, 0, 0), new Vector3f(0.1f, 0.1f, 0.1f));
-			Vector3f adjMin2 = Vector3f.add(obj1.position, ab2.min, null);
-			Vector3f adjMax2 = Vector3f.add(obj1.position, ab2.max, null);
-			AABB adjAB2 = new AABB(adjMin2, adjMax2);
-
-			//Loop through the faces of the second object's model
-			for(int j = 0; j < mod1.faces.size(); j++)
-			{
-				//AABB ab1 = new AABB(f1);
-				Face f1 = mod1.faces.get(j);
-				AABB ab1 = f1.boundingBox;
-				Vector3f adjMin1 = Vector3f.add(obj1.position, ab2.min, null);
-				Vector3f adjMax1 = Vector3f.add(obj1.position, ab2.max, null);
-				AABB adjAB1 = new AABB(adjMin1, adjMax1);
-
-				if(adjAB1.intersecting(adjAB2))
-				{
-					return true;
-				}
-			}
-		}
-
-
 		return false;
-
 	}
 
 	/**

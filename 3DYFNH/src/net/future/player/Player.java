@@ -1,18 +1,15 @@
 package net.future.player;
-import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
-import static org.lwjgl.opengl.GL11.glLoadIdentity;
-import static org.lwjgl.opengl.GL11.glMatrixMode;
-import static org.lwjgl.opengl.GL11.glPopMatrix;
-import static org.lwjgl.opengl.GL11.glPushMatrix;
+import net.future.GameLoop;
+import net.future.audio.AudioManager;
 import net.future.gameobject.GameObject;
 import net.future.helper.Input;
+import net.future.physpacks.PhysPlayer;
 import net.future.world.World;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 public class Player extends GameObject
 {
-	//public Light light;
 	private Input in;
 	public boolean debugMenu;
 	public Camera cam;
@@ -25,16 +22,21 @@ public class Player extends GameObject
 	public Player(World w, float aspect, float fov)
 	{
 		super(w);
+		this.grounded = false;
 		this.in = new Input();
 		this.cam = new Camera(w, this, aspect, fov);
 		this.debugMenu = false;
+		this.cam.applyPerspectiveMatrix();
+		this.physics = new PhysPlayer();
 	}
 
 	public void playerUpdate()
 	{
+		//Updates which keys are down, pressed, ect
 		in.update();
 		boolean pausePressed = in.getKeypress(pause);
 
+		//Player must always be able to pause
 		if(pausePressed)
 		{
 			if(Mouse.isGrabbed())
@@ -54,12 +56,9 @@ public class Player extends GameObject
 		if(!this.world.paused)
 		{
 			cam.processMouse();
-			cam.processKeyboard(16);
+			cam.processKeyboard(GameLoop.delta);
 			
 			this.handleInput();
-			
-			//this.moveLight();
-			//this.light.update();
 		}
 	}
 	
@@ -68,6 +67,7 @@ public class Player extends GameObject
 		//Toggle debug screen
 		if(in.getKeypress(debugButton))
 		{
+			AudioManager.infiniteRegression.play();
 			if(debugMenu)
 				debugMenu=false;
 			else
@@ -79,6 +79,7 @@ public class Player extends GameObject
 			
 		}
 		
+		//Set position of light 0 of the world to player position
 		if (Keyboard.isKeyDown(Keyboard.KEY_Q)) 
 		{
             this.world.lights[0].lightPosition.flip();
@@ -91,13 +92,13 @@ public class Player extends GameObject
 	public void cameraUpdate()
 	{
 		//Use the player's camera
-		this.cam.applyOptimalStates();
+		//this.cam.applyOptimalStates();
 		this.cam.applyTranslations();
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glLoadIdentity();
-		glPopMatrix();
-		this.cam.applyPerspectiveMatrix();
+		//glMatrixMode(GL_MODELVIEW);
+		//glPushMatrix();
+		//glLoadIdentity();
+		//glPopMatrix();
+		//this.cam.applyPerspectiveMatrix();
 	}
 
 	@Override

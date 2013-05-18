@@ -17,7 +17,6 @@ import static org.lwjgl.opengl.GL11.glTranslatef;
 import static org.lwjgl.util.glu.Project.gluPerspective;
 import net.future.gameobject.GameObject;
 import net.future.world.World;
-
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GLContext;
@@ -26,13 +25,17 @@ import org.lwjgl.util.vector.Vector3f;
 
 public class Camera implements ICamera
 {
+	public int kUp, kDown, kLeft, kRight, kJump, kfDown;
+
 	public float mouseSpeed, maxLookUp, maxLookDown, aspectRatio,
-				 moveSpeed, fov, zNear, zFar;
-	
+	moveSpeed, fov, zNear, zFar, jumpForce;
+
 	public World world;
-	
+
 	public GameObject parent;
-	
+
+	public boolean fly;
+
 	public Camera(World w, GameObject parent, float aspect, float fov)
 	{
 		this.world = w;
@@ -44,15 +47,24 @@ public class Camera implements ICamera
 		this.zFar = 100;
 		this.aspectRatio=aspect;
 		this.fov = fov;
-		this.moveSpeed = 1;
+		this.moveSpeed = 1f;
+		this.jumpForce = 0.18f;
+		this.fly = true;
+
+		this.kUp = Keyboard.KEY_W;
+		this.kDown = Keyboard.KEY_S;
+		this.kLeft = Keyboard.KEY_A;
+		this.kRight = Keyboard.KEY_D;
+		this.kJump = Keyboard.KEY_SPACE;
+		this.kfDown = Keyboard.KEY_LSHIFT;
 	}
-	
+
 	@Override
 	public void processMouse() 
 	{
 		float mouseDX = Mouse.getDX() * mouseSpeed * 0.16f;
 		float mouseDY = Mouse.getDY() * mouseSpeed * 0.16f;
-		
+
 		if (this.parent.rotation.y + mouseDX >= 360) 
 		{
 			this.parent.rotation.y = this.parent.rotation.y + mouseDX - 360;
@@ -65,8 +77,8 @@ public class Camera implements ICamera
 		{
 			this.parent.rotation.y += mouseDX;
 		}
-		
-		
+
+
 		if (this.parent.rotation.x - mouseDY >= maxLookDown && this.parent.rotation.x - mouseDY <= maxLookUp) 
 		{
 			this.parent.rotation.x += -mouseDY;
@@ -84,65 +96,78 @@ public class Camera implements ICamera
 	@Override
 	public void processKeyboard(float delta) 
 	{
-		if (delta <= 0) {
-			throw new IllegalArgumentException("delta " + delta + " is 0 or is smaller than 0");
+		float d=delta;
+		if (d <= 0)
+		{
+			d = 16;
+			//throw new IllegalArgumentException("delta (" + delta + ") is 0 or is smaller than 0");
 		}
 
-		boolean keyUp = Keyboard.isKeyDown(Keyboard.KEY_UP) || Keyboard.isKeyDown(Keyboard.KEY_W);
-		boolean keyDown = Keyboard.isKeyDown(Keyboard.KEY_DOWN) || Keyboard.isKeyDown(Keyboard.KEY_S);
-		boolean keyLeft = Keyboard.isKeyDown(Keyboard.KEY_LEFT) || Keyboard.isKeyDown(Keyboard.KEY_A);
-		boolean keyRight = Keyboard.isKeyDown(Keyboard.KEY_RIGHT) || Keyboard.isKeyDown(Keyboard.KEY_D);
-		boolean flyUp = Keyboard.isKeyDown(Keyboard.KEY_SPACE);
-		boolean flyDown = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
+		boolean keyUp = Keyboard.isKeyDown(this.kUp);
+		boolean keyDown = Keyboard.isKeyDown(this.kDown);
+		boolean keyLeft = Keyboard.isKeyDown(this.kLeft);
+		boolean keyRight = Keyboard.isKeyDown(this.kRight);
+		boolean flyUp = Keyboard.isKeyDown(this.kJump);
+		boolean flyDown = Keyboard.isKeyDown(this.kfDown);
 
 		if (keyUp && keyRight && !keyLeft && !keyDown) {
-			moveFromLook(delta * 0.003f * moveSpeed, 0, -delta * 0.003f * moveSpeed);
+			moveFromLook(d * 0.003f * moveSpeed, 0, -d * 0.003f * moveSpeed);
 		}
 		if (keyUp && keyLeft && !keyRight && !keyDown) {
-			moveFromLook(-delta * 0.003f * moveSpeed, 0, -delta * 0.003f * moveSpeed);
+			moveFromLook(-d * 0.003f * moveSpeed, 0, -d * 0.003f * moveSpeed);
 		}
 		if (keyUp && !keyLeft && !keyRight && !keyDown) {
-			moveFromLook(0, 0, -delta * 0.003f * moveSpeed);
+			moveFromLook(0, 0, -d * 0.003f * moveSpeed);
 		}
 		if (keyDown && keyLeft && !keyRight && !keyUp) {
-			moveFromLook(-delta * 0.003f * moveSpeed, 0, delta * 0.003f * moveSpeed);
+			moveFromLook(-d * 0.003f * moveSpeed, 0, d * 0.003f * moveSpeed);
 		}
 		if (keyDown && keyRight && !keyLeft && !keyUp) {
-			moveFromLook(delta * 0.003f * moveSpeed, 0, delta * 0.003f * moveSpeed);
+			moveFromLook(d * 0.003f * moveSpeed, 0, d * 0.003f * moveSpeed);
 		}
 		if (keyDown && !keyUp && !keyLeft && !keyRight) {
-			moveFromLook(0, 0, delta * 0.003f * moveSpeed);
+			moveFromLook(0, 0, d * 0.003f * moveSpeed);
 		}
 		if (keyLeft && !keyRight && !keyUp && !keyDown) {
-			moveFromLook(-delta * 0.003f * moveSpeed, 0, 0);
+			moveFromLook(-d * 0.003f * moveSpeed, 0, 0);
 		}
 		if (keyRight && !keyLeft && !keyUp && !keyDown) {
-			moveFromLook(delta * 0.003f * moveSpeed, 0, 0);
+			moveFromLook(d * 0.003f * moveSpeed, 0, 0);
 		}
-		if (flyUp && !flyDown) {
-			this.world.moveObj(this.parent, new Vector3f(this.parent.position.x, this.parent.position.y + delta * 0.003f * moveSpeed, this.parent.position.z));
+
+		if(fly)
+		{
+			if (flyUp && !flyDown) {
+				this.world.moveObj(this.parent, new Vector3f(this.parent.position.x, this.parent.position.y + d * 0.003f * moveSpeed, this.parent.position.z));
+			}
+			if (flyDown && !flyUp) {
+				this.world.moveObj(this.parent, new Vector3f(this.parent.position.x, this.parent.position.y - d * 0.003f * moveSpeed, this.parent.position.z));
+			}
 		}
-		if (flyDown && !flyUp) {
-			this.world.moveObj(this.parent, new Vector3f(this.parent.position.x, this.parent.position.y - delta * 0.003f * moveSpeed, this.parent.position.z));
+		else
+		{
+			if (flyUp && this.parent.grounded)
+			{
+				this.parent.velocity.y=(this.jumpForce) + this.parent.velocity.y;
+			}
 		}
 	}
 
 	@Override
 	public void moveFromLook(float dx, float dy, float dz)
 	{
+		float movY = 0;
+
 		float movX = (float)(dx * sin(toRadians(this.parent.rotation.y - 90)) + dz * sin(toRadians(this.parent.rotation.y)));
-		float movY = (float)(dy * sin(toRadians(this.parent.rotation.x - 90)) + dz * sin(toRadians(this.parent.rotation.x)));
+		if(fly)
+			movY = (float)(dy * sin(toRadians(this.parent.rotation.x - 90)) + dz * sin(toRadians(this.parent.rotation.x)));
 		float movZ = (float)(dx * cos(toRadians(this.parent.rotation.y - 90)) + dz * cos(toRadians(this.parent.rotation.y)));
-		
-		float newZ = this.parent.position.z + (movZ);
-		float newX = this.parent.position.x - (movX);
-		float newY = this.parent.position.y + movY;
-		
-		this.world.moveObj(this.parent, new Vector3f(newX, newY, newZ));
+
+		this.parent.velocity = Vector3f.add(new Vector3f(-movX, movY, movZ), this.parent.velocity, null);
 	}
 
 	/**
-	 * Sets GL_PROJECTION to an orthographic projection matrix. The matrix mode will be returned it its previous value
+	 * Sets GL_PROJECTION to an orthographic projection matrix. The matrix mode will be returned to its previous value
 	 * after execution.
 	 */
 	@Override
@@ -152,7 +177,7 @@ public class Camera implements ICamera
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glOrtho(-aspectRatio, aspectRatio, -1, 1, 0, zFar);
-		
+
 		gluPerspective(fov, -aspectRatio, 0f, zFar);
 		glPopAttrib();
 	}

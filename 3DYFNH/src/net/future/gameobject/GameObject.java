@@ -1,8 +1,9 @@
 package net.future.gameobject;
 import java.io.File;
-
+import net.future.model.Face;
 import net.future.model.Model;
 import net.future.model.OBJLoader;
+import net.future.physpacks.IPhysPack;
 import net.future.world.World;
 
 import org.lwjgl.util.vector.Vector3f;
@@ -14,6 +15,8 @@ public class GameObject
 	public Vector3f rotation;
 	public Vector3f velocity;
 	public String name = "Default";
+	public IPhysPack physics;
+	public boolean grounded;
 	public float[] color;
 	public Model model;
 	public int list;
@@ -24,15 +27,15 @@ public class GameObject
 	 */
 	public GameObject(World w)
 	{
-		/*
 		this.model = new Model();
 		this.model.faces.add(new Face(
-				new Vector3f(0, 0, 0),
-				new Vector3f(0.1f, 0.1f, 0),
-				new Vector3f(0, 0, 0.1f)
+				new Vector3f(0.05f, 0, 0),
+				new Vector3f(0, -0.2f, 0),
+				new Vector3f(0, 0, 0.05f)
 				));
-		this.model = this.model.setUpAABB();*/
-		this.model = null;
+		this.model.faces.get(0).setUpAABB();
+		this.model = this.model.setUpAABB();
+		//this.model = null;
 		this.world = w;
 		this.position = new Vector3f(0, 0, 0);
 		this.rotation = new Vector3f(0, 0, 0);
@@ -84,7 +87,11 @@ public class GameObject
 	 * Called every update.
 	 * Override if necessary
 	 */
-	public void update(){}
+	public void update()
+	{
+		if(this.physics!=null)
+			this.physics.update(this);
+	}
 	
 	public void setUpList()
 	{

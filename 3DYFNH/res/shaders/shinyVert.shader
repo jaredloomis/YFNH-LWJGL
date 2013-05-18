@@ -22,8 +22,7 @@ varying vec3 varyingColour;
 // diffuse attributes of the material and of the light.
 // Specular lighting: 
 
-void main() 
-{
+void main() {
 	// Retrieves the position of the vertex in eye space by 
 	// multiplying the vertex in object space with the 
 	// modelview matrix and stores it in a 3D vertex.

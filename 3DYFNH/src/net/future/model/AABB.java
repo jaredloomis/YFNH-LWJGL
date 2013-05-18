@@ -27,12 +27,18 @@ public class AABB
 						);
 
 				this.max = new Vector3f(
-						Math.min(this.max.x, point.x),
-						Math.min(this.max.y, point.y),
-						Math.min(this.max.z, point.z)
+						Math.max(this.max.x, point.x),
+						Math.max(this.max.y, point.y),
+						Math.max(this.max.z, point.z)
 						);
 			}
 		}
+	}
+	
+	public AABB(AABB box, Vector3f offset)
+	{
+		this.min=Vector3f.add(box.min, offset, null);
+		this.max=Vector3f.add(box.max, offset, null);
 	}
 
 	public AABB(Vector3f min, Vector3f max)
@@ -56,5 +62,11 @@ public class AABB
 		if(length>=0&&height>=0&&height>=0)
 			return new AABB(new Vector3f(0, 0, 0), new Vector3f(length, width, height));
 		return null;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "AABB(Min("+this.min+"), Max("+this.max+"))";
 	}
 }

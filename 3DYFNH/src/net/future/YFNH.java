@@ -8,6 +8,5 @@ public class YFNH
 		
 		loop.initialize();
 		loop.gameLoop();
-		loop.cleanUp();
 	}
 }

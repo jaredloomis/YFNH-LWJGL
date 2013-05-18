@@ -3,12 +3,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.nio.FloatBuffer;
-
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.glUseProgram;
-
-import net.future.math.GeometryHelper;
-
 import org.lwjgl.BufferUtils;
 import static org.lwjgl.opengl.GL15.*;
 import org.lwjgl.util.vector.Vector2f;
@@ -184,19 +180,20 @@ public class OBJLoader
 					{
 						//face.normals = new Vector3f[3];
 						//face.points = new Vector3f[3];
-						Vector2f[] textureCoords = GeometryHelper.triangleTextureCoordinates(
-								m.verts.get((int) face.vertex[0] - 1), 
-								m.verts.get((int) face.vertex[1] - 1), 
-								m.verts.get((int) face.vertex[2] - 1)
-								);
+						Vector2f[] textureCoords = new Vector2f[]{
+								new Vector2f(0, 0),
+								new Vector2f(1, 0),
+								new Vector2f(0, 1)
+						};
 
 						glTexCoord2f(textureCoords[0].x, textureCoords[0].y);
+						
 						Vector3f n1 = m.norms.get((int) face.normal[0] - 1);
 						glNormal3f(n1.x, n1.y, n1.z);
-						//face.normals[0] = n1;		
+						
 						Vector3f v1 = m.verts.get((int) face.vertex[0] - 1);
 						glVertex3f(v1.x, v1.y, v1.z);
-						//face.points[0] = v1;
+						
 
 						glTexCoord2f(textureCoords[1].x, textureCoords[1].y);
 						Vector3f n2 = m.norms.get((int) face.normal[1] - 1);
@@ -235,7 +232,19 @@ public class OBJLoader
 		return new float[]{v.x, v.y};
 	}
 
-	public static int[] createVBO(Model model) 
+	/**
+	 * Returns An Object[][]
+	 * 
+	 * <ul>
+	 * 	<li>return[0][0] - vboVertexHandle:int</li>
+	 * 	<li>return[0][1] - vboNormalHandle:int</li>
+	 * 	<li>return[0][2] - vboTextureHandle:int</li>
+	 * 	<li>return[1][0] - vertices:FloatBuffer</li>
+	 * 	<li>return[1][1] - normals:FloatBuffer</li>
+	 * 	<li>return[1][2] - textureCoordinates:FloatBuffer</li>
+	 * </ul>
+	 */
+	public static Object[][] createVBO(Model model) 
 	{
 		int vboVertexHandle = glGenBuffers();
 		int vboNormalHandle = glGenBuffers();
@@ -245,7 +254,7 @@ public class OBJLoader
 		FloatBuffer normals = reserveData(model.faces.size() * 9);
 		FloatBuffer textCoords = reserveData(model.faces.size() * 9);
 		
-		for (Face face : model.faces) 
+		for (Face face : model.faces)
 		{
 			vertices.put(asFloats(face.points[0]));
 			vertices.put(asFloats(face.points[1]));
@@ -273,9 +282,9 @@ public class OBJLoader
 		
 		glBindBuffer(GL_ARRAY_BUFFER, vboTexHandle);
 		glBufferData(GL_ARRAY_BUFFER, textCoords, GL_STATIC_DRAW);
-		glTexCoordPointer(3, GL_FLOAT, 0, 0L);
+		glTexCoordPointer(2, GL_FLOAT, 0, 0L);
 		
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		return new int[]{vboVertexHandle, vboNormalHandle, vboTexHandle};
+		return new Object[][]{{vboVertexHandle, vertices}, {vboNormalHandle, normals}, {vboTexHandle, textCoords}};
 	}
 }

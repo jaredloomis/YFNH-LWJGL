@@ -1,5 +1,6 @@
 package net.future;
 import static org.lwjgl.opengl.GL11.*;
+import net.future.audio.AudioManager;
 import net.future.helper.FontHelper;
 import net.future.player.Player;
 import net.future.world.World;
@@ -16,37 +17,43 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.util.vector.Vector3f;
 import org.newdawn.slick.UnicodeFont;
 
-public class GameLoop 
+public class GameLoop
 {
 	private World w;
 	private Player p;
 	private int updateRate = 80;
+	private static int lastFPS=0;
+	private static int fps = 0;
 	private UnicodeFont font;
 	private static float lastFrame = 0;
 	private FloatBuffer perspectiveProjectionMatrix = BufferUtils.createFloatBuffer(16);
 	private FloatBuffer orthographicProjectionMatrix = BufferUtils.createFloatBuffer(16);
+	public static float delta = getDelta();
 
 	/**
 	 * Initial set-up, called once from Driver class
 	 */
 	public void initialize()
 	{
+		//Init the time variables
+		lastFrame=getTime();
+		getTime();
+		getDelta();
+		
 		this.setUpDisplay();
 		this.setUpLighting();
+		this.setUpFog();
 		this.setUpWorld();
 
 		//Allows 2d textures
 		glEnable(GL_TEXTURE_2D);
-				
+
 		//Makes the default screen color black
 		glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
 		glClearDepth(1.0f);
 
 		//Make mouse invisible
 		Mouse.setGrabbed(true);
-
-		//Initializes some variables
-		getDelta();
 
 		//Initialize and set up the font system
 		this.font = FontHelper.getWhiteArial();
@@ -78,8 +85,9 @@ public class GameLoop
 	 */
 	private void setUpLighting() 
 	{
-		glEnable(GL_NORMALIZE);
-		
+		//Replaced by GL_RESCALE_NORMAL?
+		//glEnable(GL_NORMALIZE);
+
 		//Makes lighting smooth instead of flat
 		glShadeModel(GL_SMOOTH);
 
@@ -104,7 +112,7 @@ public class GameLoop
 
 		//Enable lighting in general
 		glEnable(GL_LIGHTING);
-		
+
 		//Do not render the backs of faces.
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
@@ -112,6 +120,18 @@ public class GameLoop
 		//Enable colors on faces / objects
 		glEnable(GL_COLOR_MATERIAL);
 		glColorMaterial(GL_FRONT, GL_DIFFUSE);
+	}
+
+	private void setUpFog()
+	{
+		// Setup fog
+		//glFogi(GL_FOG_MODE, GL_EXP);
+		//glFogfv(GL_FOG_COLOR, fogColor);
+		//glFogf(GL_FOG_DENSITY, 0.1f);
+		//glHint(GL_FOG_HINT, GL_DONT_CARE);
+		//glFogf(GL_FOG_START, 10);
+		//glFogf(GL_FOG_END, 10 * 2);
+		//glEnable(GL_FOG);
 	}
 
 	private void setUpWorld()
@@ -122,7 +142,7 @@ public class GameLoop
 		//Set Up Player / Camera
 		p = new Player(w, (float) Display.getWidth() / Display.getHeight(), 70);
 		w.add(p);
-		w.moveObj(p, new Vector3f(5, 5, 5));
+		w.moveObj(p, new Vector3f(0, 0, 0));
 		p.cam.applyPerspectiveMatrix();
 
 		glGetFloat(GL_PROJECTION_MATRIX, perspectiveProjectionMatrix);
@@ -149,6 +169,7 @@ public class GameLoop
 			//Sync the display to max FPS
 			Display.sync(updateRate);
 		}
+		this.cleanUp();
 	}
 
 	/**
@@ -177,7 +198,7 @@ public class GameLoop
 		//Draw Debug screen if debug is on
 		if(this.p.debugMenu)
 			FontHelper.debugMenu(this.font, this.p, getFPS());
-		
+
 		glEnable(GL_LIGHTING);
 		glPopMatrix();
 		glMatrixMode(GL_PROJECTION);
@@ -193,6 +214,8 @@ public class GameLoop
 	 */
 	private void update()
 	{	
+		delta = getDelta();
+		
 		//Update the player
 		p.playerUpdate();
 
@@ -201,9 +224,17 @@ public class GameLoop
 
 		//Updates location of Orgin
 		glLoadIdentity();
-
+				
 		//Moves the camera, Uses the player camera, ect.
 		p.cameraUpdate();
+		
+		AudioManager.update();
+	}
+	
+	private void cleanUp()
+	{
+		AudioManager.deleteAll();
+		Display.destroy();
 	}
 
 	/**
@@ -216,7 +247,7 @@ public class GameLoop
 		return (Sys.getTime() * 1000) / Sys.getTimerResolution();
 	}
 
-	public static float getDelta()
+	private static float getDelta()
 	{
 		long time = getTime();
 		float delta = time - lastFrame;
@@ -225,14 +256,17 @@ public class GameLoop
 		return delta;
 	}
 
-	public static float getFPS()
-	{	
-		return 1000/getDelta();
-	}
-
-
-	public void cleanUp()
+	/**
+	 * Calculate the FPS and set it in the title bar
+	 */
+	public static float getFPS() 
 	{
-		Display.destroy();
+		if (getTime() - lastFPS > 1000) {
+			Display.setTitle("FPS: " + fps);
+			fps = 0;
+			lastFPS += 1000;
+		}
+		fps++;
+		return fps;
 	}
 }

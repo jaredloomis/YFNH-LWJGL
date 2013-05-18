@@ -4,11 +4,12 @@ import java.util.List;
 import net.future.gameobject.GameObject;
 import net.future.gameobject.Light;
 import net.future.gameobject.ObjectBunny;
+import net.future.math.GeometryHelper;
 import net.future.model.Model;
-import net.future.model.MyTextureLoader;
 import net.future.player.Player;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.util.vector.Vector3f;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -28,7 +29,7 @@ public class World
 		this.paused = false;
 
 		cube = new ObjectBunny(this);
-		cube.position = new Vector3f(5, 5, 5);
+		cube.position = new Vector3f(0, -10, 0);
 		cube.name = "bunny";
 		this.add(cube);
 
@@ -42,117 +43,119 @@ public class World
 	 * Moves and draws all objects.
 	 */
 	public void update()
-	{	
-		//Draws all objects on the screen
-		//glCallList(cur.model.list);
+	{
 		for(int i = 0; i < objects.size(); i++)
 		{
 			GameObject cur = this.objects.get(i);
 
 			glPushMatrix();
 			{
-				MyTextureLoader.getTexture("res/textures/BasicBlock.png").bind();
-				//QUAD
-				glBegin(GL_QUADS);
-				{
-					glTexCoord2f(0, 0);
-					glColor3f(1, 0, 0);
-					glVertex3f(0, 0, 0);
-
-					glTexCoord2f(1, 0);
-					glColor3f(0, 1, 0);
-					glVertex3f(1, 0, 0);
-
-					glTexCoord2f(1, 1);
-					glColor3f(1, 0, 1);
-					glVertex3f(1, 0, 1);
-
-					glTexCoord2f(0, 1);
-					glColor3f(0, 0, 1);
-					glVertex3f(0, 0, 1);
-				}
-				glEnd();
-
-
 				if(cur.model != null)
-				{	
+				{
 					//Moves the obj
 					if(cur instanceof Player)
 						;//glTranslatef(cur.position.x, cur.position.y, cur.position.z);
 					else
 					{
-						//Old way to call objects
-						//glCallList(cur.list);
-						
-						Model m = cur.model;
-						
-						//int diffuseUniform = glGetUniformLocation(m.shader, "");
-						//glUniform1f();
+						//WHAT WAY TO RENDER
+						int renderType = 1;
 
-						//Move the object
-						glTranslatef(-cur.position.x, -cur.position.y, -cur.position.z);
+						//If not using VBOs, use display lists
+						if(renderType==0)
+						{
+							Model m = cur.model;
 
-						//Scale the object using the scale variable
-						glScalef(cur.model.scale, cur.model.scale, cur.model.scale);
+							//Move the object
+							glTranslatef(-cur.position.x, -cur.position.y, -cur.position.z);
 
-						//Set the shininess
-						glMaterialf(GL_FRONT, GL_SHININESS, m.shininess);
-						
-						glColor3f(cur.color[0], cur.color[1], cur.color[2]);
-						
-						//Use the model's shader
-						glUseProgram(m.shader);
+							//Scale the object using the scale variable
+							glScalef(cur.model.scale, cur.model.scale, cur.model.scale);
 
-						//Make GL_ARRAY_BUFFER reference the model's
-						//vertex handle
-						glBindBuffer(GL_ARRAY_BUFFER, m.vboVertexHandle);
+							//Set the shininess
+							glMaterialf(GL_FRONT, GL_SHININESS, m.shininess);
 
-						//Set the current vbo vertex array to whatever is in
-						//GL_ARRAY_BUFFER.
-						//Params: size, type, 0, offset
-						glVertexPointer(3, GL_FLOAT, 0, 0L);
+							//Set the color
+							glColor3f(cur.color[0], cur.color[1], cur.color[2]);
 
-						//Make GL_ARRAY_BUFFER reference the model's
-						//normal handle
-						glBindBuffer(GL_ARRAY_BUFFER, m.vboNormalHandle);
+							//Use the model's shader
+							glUseProgram(m.shader);
 
-						//Set the current vbo normal array to whatever is in
-						//GL_ARRAY_BUFFER.
-						//Params: size, type, 0, offset
-						glNormalPointer(GL_FLOAT, 0, 0L);
+							//Bind the current model's texture
+							glBindTexture(GL_TEXTURE_2D, m.texture.getTextureID());
+							m.texture.bind();
 
-						//Bind the model's texture
-						cur.model.texture.bind();
+							//Old way to call objects
+							glCallList(cur.list);
+						}
+						//If using VBOs
+						else if(renderType==1)
+						{
+							Model m = cur.model;
 
-						//Make GL_ARRAY_BUFFER reference the model's
-						//Texture Coordinate handle
-						glBindBuffer(GL_ARRAY_BUFFER, m.vboTexHandle);
+							//Move the object
+							//TODO Make all negative again? I don't think so but...
+							glTranslatef(cur.position.x, cur.position.y, cur.position.z);
 
-						//Params: size, type, 0, offset
-						glTexCoordPointer(3, GL_FLOAT, 0, 0L);
+							//Scale the object using the scale variable
+							//glScalef(cur.model.scale, cur.model.scale, cur.model.scale);
 
-						//Allow VBOs
-						glEnableClientState(GL_VERTEX_ARRAY);
-						glEnableClientState(GL_NORMAL_ARRAY);
-						glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+							//Set the shininess
+							glMaterialf(GL_FRONT, GL_SHININESS, m.shininess);
 
-						
-						//Set the color
-						glColor3f(cur.color[0], cur.color[1], cur.color[2]);
+							//Set the color
+							glColor3f(cur.color[0], cur.color[1], cur.color[2]);
 
-						//TODO Remove?
-						//Sets specular to the lights[0] object's specularity
-						//glMaterial(GL_FRONT, GL_SPECULAR, m.s);
+							//Use the model's shader
+							glUseProgram(m.shader);
 
-						//Draw the model
-						//Params: RenderMode, first index to render, last index to render
-						glDrawArrays(GL_TRIANGLES, 0, m.faces.size() * 3);
+							if(m.texture!=null)
+							{
+								GL13.glActiveTexture(GL13.GL_TEXTURE0);
+								
+								glBindTexture(GL_TEXTURE_2D, m.texture.getTextureID());
+								//Bind it again because... idk, its not working!
+								m.texture.bind();
+								
+								//Find the "memory address" of texture_diffuse uniform in shader
+								int loc = glGetUniformLocation(m.shader, "texture1");
+								
+								//Pass the 0 value to the sampler meaning it is to use texture unit 0.
+								glUniform1i(loc, 0);
+							}
 
-						//Disable the VBOS
-						glDisableClientState(GL_VERTEX_ARRAY);
-						glDisableClientState(GL_NORMAL_ARRAY);
-						glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-						
+							//// Set Data for Vertices ////
+							glBindBuffer(GL_ARRAY_BUFFER, m.vboVertexHandle);
+							glBufferData(GL_ARRAY_BUFFER, m.vertex, GL_STATIC_DRAW);
+							glVertexPointer(3, GL_FLOAT, 0, 0L);
+
+							//// Set Data for Normals ////
+							glBindBuffer(GL_ARRAY_BUFFER, m.vboNormalHandle);
+							glBufferData(GL_ARRAY_BUFFER, m.normal, GL_STATIC_DRAW);
+							glNormalPointer(GL_FLOAT, 0, 0L);
+
+							//// Set Data for Texture Coordinates ////
+							glBindBuffer(GL_ARRAY_BUFFER, m.vboTexHandle);
+							glBufferData(GL_ARRAY_BUFFER, m.text, GL_STATIC_DRAW);
+							glTexCoordPointer(2, GL_FLOAT, 0, 0L);
+
+							//Unbind Buffer for VBO
+							glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+							//"Turn on" All Necessary client states
+							glEnableClientState(GL_VERTEX_ARRAY);
+							glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+							glEnableClientState(GL_NORMAL_ARRAY);
+							{
+
+								//Actually Draw the object
+								glDrawArrays(GL_TRIANGLES, 0, m.faces.size() * 3);
+
+							}
+							//"Turn off" All Necessary client states
+							glDisableClientState(GL_VERTEX_ARRAY);
+							glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+							glDisableClientState(GL_NORMAL_ARRAY);
+						}
 
 						//Resets the array buffer, shader, texture, and color
 						glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -160,7 +163,7 @@ public class World
 						cur.model.texture.release();
 						glBindTexture(GL_TEXTURE_2D, 0);
 						glColor4f(1, 1, 1, 1);
-						
+
 						glLoadIdentity();
 					}
 				}
@@ -171,7 +174,7 @@ public class World
 			if(!paused)
 				cur.update();
 		}
-		
+
 		for(int i =0; i < this.lights.length; i++)
 		{
 			if(this.lights[i]!=null)
@@ -196,16 +199,19 @@ public class World
 	 * Safely moves objects by checking
 	 * if canPlaceHere
 	 */
-	public void moveObj(GameObject obj, Vector3f pos)
+	public boolean moveObj(GameObject obj, Vector3f pos)
 	{
-		float x = pos.x;
-		float y = pos.y;
-		float z = pos.z;
+		Vector3f initialPosition = new Vector3f(obj.position.x, obj.position.y, obj.position.z);
 
-		if(canPlaceHere(obj, x, y, z))
+		//Placing the object first and then testing to see if it
+		//is allowed to be there seems to be faster.
+		obj.position = pos;
+		if(!canPlaceHere(obj, pos.x, pos.y, pos.z))
 		{
-			obj.position = pos;
+			obj.position = initialPosition;
+			return false;
 		}
+		return true;
 	}
 
 	/**
@@ -222,16 +228,11 @@ public class World
 
 				if(cur != obj)
 				{
-					return true;
-					/*
-					//Debug.println(this, "" + "Cur: " + cur.getName() + " " + cur.position + " Obj: " + obj.getName() + " " + obj.position);
 					if(GeometryHelper.willIntersect(obj, cur, new Vector3f(x, y, z)))
 					{
-						//Debug.println(this, "They did it! They actually did it!!!");
 						return false;
-						//return true;
 					}
-					 */
+
 				}
 			}
 		}
