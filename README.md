@@ -3,7 +3,7 @@ YFNH-LWJGL
 <h3>Your Future Needs Help using The Lightweight Java Game Library</h3>
 ==========
 <h3>TODO</h3>
-- Support for single-image textured models
+- <del>Support for single-image textured models</del>
 
 - Collision detection fix
 
