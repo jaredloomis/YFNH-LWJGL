@@ -13,16 +13,23 @@ public class Model
 	public int shader = 0;
 	public List<Vector3f> verts = new ArrayList<Vector3f>();
 	public List<Vector3f> norms = new ArrayList<Vector3f>();
+	public List<Vector2f> textureCoords = new ArrayList<Vector2f>();
 	public List<Face> faces = new ArrayList<Face>();
 	public String name = "Default";
 	public AABB boundingBox;
 	public float scale = 1;
+	
 	public int vboVertexHandle;
 	public int vboNormalHandle;
 	public int vboTexHandle;
+	public int vboColorHandle;
+	public int vboTexIDHandle;
+	
 	public FloatBuffer vertex;
 	public FloatBuffer normal;
 	public FloatBuffer text;
+	public FloatBuffer color;
+	public FloatBuffer textID;
 
 	public float shininess;
 
@@ -33,15 +40,19 @@ public class Model
 
 	public Model setUpVBO() 
 	{
-		//TODO REMOVE THIS!!!!
-		this.setDefaultTextCoords();
 		Object[][] vbos = OBJLoader.createVBO(this);
+		
 		this.vboVertexHandle = (int)vbos[0][0];
 		this.vboNormalHandle = (int)vbos[1][0];
 		this.vboTexHandle = (int)vbos[2][0];
+		this.vboColorHandle = (int)vbos[3][0];
+		this.vboTexIDHandle = (int)vbos[4][0];
+		
 		this.vertex = (FloatBuffer)vbos[0][1];
 		this.normal = (FloatBuffer)vbos[1][1];
 		this.text = (FloatBuffer)vbos[2][1];
+		this.color = (FloatBuffer)vbos[3][1];
+		this.textID = (FloatBuffer)vbos[4][1];
 
 		return this;
 	}
@@ -91,7 +102,7 @@ public class Model
 	/**
 	 * Just setting the scale variable of the model
 	 * makes the collision detection and width, height
-	 * of the model completely wrong, so I just each of the 
+	 * of the model completely wrong, so I just scale each of the 
 	 * point's positions to the specified scale
 	 */
 	public Model setScale(float s)
@@ -130,7 +141,8 @@ public class Model
 			if(i==0)
 			{
 				this.boundingBox = f.boundingBox;
-				//this.boundingBox.min = f.boundingBox.min;
+				//this.boundingBox.min=f.boundingBox.min;
+				//this.boundingBox.max = f.boundingBox.max;
 			}
 			else
 			{

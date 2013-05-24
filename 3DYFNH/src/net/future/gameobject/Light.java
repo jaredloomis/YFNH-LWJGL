@@ -32,9 +32,9 @@ public class Light extends GameObject
 		glLight(id, GL_POSITION, lightPosition);	
 		glLightModel(GL_LIGHT_MODEL_AMBIENT, ambientInt);
 		//Uncommenting the code below makes everything darker...
-		//glLight(id, GL_AMBIENT, ambientInt);
-		//glLight(id, GL_SPECULAR, specInt);				
-		//glLight(id, GL_DIFFUSE, diffInt);
+		glLight(id, GL_AMBIENT, ambientInt);
+		glLight(id, GL_SPECULAR, specInt);				
+		glLight(id, GL_DIFFUSE, diffInt);
 	}
 	
 	public void init() 

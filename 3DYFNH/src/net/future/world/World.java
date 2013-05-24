@@ -33,7 +33,7 @@ public class World
 		cube.name = "bunny";
 		this.add(cube);
 
-		Light l1 = new Light(this, GL11.GL_LIGHT0, new float[]{0.5f,0.5f,0.5f,1}, new float[]{0.5f,0.5f,0.5f,1}, new float[]{0.05f, 0.05f, 0.05f, 1});
+		Light l1 = new Light(this, GL11.GL_LIGHT0, new float[]{0.5f,0.5f,0.5f,1}, new float[]{0.5f,0.5f,0.5f,1}, new float[]{0.01f, 0.01f, 0.01f, 1});
 		l1.init();
 		this.lights[0] = l1;
 	}
@@ -60,7 +60,7 @@ public class World
 						//WHAT WAY TO RENDER
 						int renderType = 1;
 
-						//If not using VBOs, use display lists
+						//renderType 0 means use display lists (DEPRECATED)
 						if(renderType==0)
 						{
 							Model m = cur.model;
@@ -80,24 +80,16 @@ public class World
 							//Use the model's shader
 							glUseProgram(m.shader);
 
-							//Bind the current model's texture
-							glBindTexture(GL_TEXTURE_2D, m.texture.getTextureID());
-							m.texture.bind();
-
 							//Old way to call objects
 							glCallList(cur.list);
 						}
-						//If using VBOs
+						//renderType 1 means use VBOs (Faster, better, cooler)
 						else if(renderType==1)
 						{
 							Model m = cur.model;
 
 							//Move the object
-							//TODO Make all negative again? I don't think so but...
 							glTranslatef(cur.position.x, cur.position.y, cur.position.z);
-
-							//Scale the object using the scale variable
-							//glScalef(cur.model.scale, cur.model.scale, cur.model.scale);
 
 							//Set the shininess
 							glMaterialf(GL_FRONT, GL_SHININESS, m.shininess);
@@ -108,42 +100,59 @@ public class World
 							//Use the model's shader
 							glUseProgram(m.shader);
 
+							
+							int texIDVar = -1;
+							
 							if(m.texture!=null)
 							{
 								GL13.glActiveTexture(GL13.GL_TEXTURE0);
 								
-								glBindTexture(GL_TEXTURE_2D, m.texture.getTextureID());
-								//Bind it again because... idk, its not working!
 								m.texture.bind();
-								
+
 								//Find the "memory address" of texture_diffuse uniform in shader
 								int loc = glGetUniformLocation(m.shader, "texture1");
-								
-								//Pass the 0 value to the sampler meaning it is to use texture unit 0.
+
+								//Set the texture1 uniform equal to 0, telling it to use GL_TEXTURE0 
 								glUniform1i(loc, 0);
+								
+								//Find the "memory address" of textureID attribute in shader
+								texIDVar = glGetAttribLocation(m.shader, "textureID");
+								
+								//System.out.println(m.textID.position()+"/"+m.textID.capacity()+" --- "+m.textID.get());
+								
+								//// Set Data for Texture IDs ////
+								glBindBuffer(GL_ARRAY_BUFFER, m.vboTexIDHandle);
+								glVertexAttribPointer(texIDVar, 1, GL11.GL_FLOAT, false, 0, 0);
+								
+								//Enable the VBO to use this attribute variable
+								glEnableVertexAttribArray(texIDVar);
+								
+								//// Set Data for Texture Coordinates ////
+								glBindBuffer(GL_ARRAY_BUFFER, m.vboTexHandle);
+								glTexCoordPointer(2, GL_FLOAT, 0, 0L);
+								
+								//Enable the VBO to use texture coords
+								glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 							}
 
 							//// Set Data for Vertices ////
 							glBindBuffer(GL_ARRAY_BUFFER, m.vboVertexHandle);
-							glBufferData(GL_ARRAY_BUFFER, m.vertex, GL_STATIC_DRAW);
 							glVertexPointer(3, GL_FLOAT, 0, 0L);
 
 							//// Set Data for Normals ////
 							glBindBuffer(GL_ARRAY_BUFFER, m.vboNormalHandle);
-							glBufferData(GL_ARRAY_BUFFER, m.normal, GL_STATIC_DRAW);
 							glNormalPointer(GL_FLOAT, 0, 0L);
 
-							//// Set Data for Texture Coordinates ////
-							glBindBuffer(GL_ARRAY_BUFFER, m.vboTexHandle);
-							glBufferData(GL_ARRAY_BUFFER, m.text, GL_STATIC_DRAW);
-							glTexCoordPointer(2, GL_FLOAT, 0, 0L);
+							//// Set Data For Color
+							glBindBuffer(GL_ARRAY_BUFFER, m.vboColorHandle);
+							glColorPointer(3, GL_FLOAT, 0, 0L);
 
-							//Unbind Buffer for VBO
+							//Unbind GL_ARRAY_BUFFER
 							glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 							//"Turn on" All Necessary client states
 							glEnableClientState(GL_VERTEX_ARRAY);
-							glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+							glEnableClientState(GL_COLOR_ARRAY);
 							glEnableClientState(GL_NORMAL_ARRAY);
 							{
 
@@ -153,14 +162,18 @@ public class World
 							}
 							//"Turn off" All Necessary client states
 							glDisableClientState(GL_VERTEX_ARRAY);
-							glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+							if(m.texture!=null)
+							{
+								glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+								glDisableVertexAttribArray(texIDVar);
+							}
+							glDisableClientState(GL_COLOR_ARRAY);
 							glDisableClientState(GL_NORMAL_ARRAY);
 						}
 
-						//Resets the array buffer, shader, texture, and color
+						//Resets the array buffer, shader, texture, and color to default values
 						glBindBuffer(GL_ARRAY_BUFFER, 0);
 						glUseProgram(0);
-						cur.model.texture.release();
 						glBindTexture(GL_TEXTURE_2D, 0);
 						glColor4f(1, 1, 1, 1);
 
@@ -170,18 +183,23 @@ public class World
 			}
 			glPopMatrix();
 
-			//If game is paused do not perform any logic
+			//If game is paused do not perform any logic updates
 			if(!paused)
 				cur.update();
 		}
 
+		//Call the update method for all lights in scene
 		for(int i =0; i < this.lights.length; i++)
 		{
 			if(this.lights[i]!=null)
 				this.lights[i].update();
 		}
 
+		//Sync the GPU with the CPU, basically required
 		Display.update();
+
+		//TODO I should enable this, but it feels alot more jittery when I do
+		//Display.sync(80);
 	}
 
 	/**

@@ -29,6 +29,7 @@ public class GameObject
 	{
 		this.model = new Model();
 		this.model.faces.add(new Face(
+				false,
 				new Vector3f(0.05f, 0, 0),
 				new Vector3f(0, -0.2f, 0),
 				new Vector3f(0, 0, 0.05f)
@@ -95,7 +96,8 @@ public class GameObject
 	
 	public void setUpList()
 	{
-		this.list = OBJLoader.createDisplayList(this.model);
+		//TODO uncomment this to enable display lists
+		//this.list = OBJLoader.createDisplayList(this.model);
 	}
 	
 	/**
