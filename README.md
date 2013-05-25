@@ -5,7 +5,7 @@ YFNH-LWJGL
 <h3>TODO</h3>
 - <del>Support for single-image textured models</del>
 
-- Sigle-imaged textured models fix
+- Single-imaged textured models fix
 
 - Collision detection fix
 
