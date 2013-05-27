@@ -21,7 +21,11 @@
 
 varying vec3 varyingColour;
 
-varying int texID;
+varying vec3 specColor;
+varying vec3 diffColor;
+varying vec3 ambColor;
+
+varying float texID;
 
 attribute int textureID;
 
@@ -49,6 +53,8 @@ void main()
 	// to show it.
 	float diffuseLightIntensity = max(0, dot(surfaceNormal, lightDirection));
 	
+	diffColor = vec3(diffuseLightIntensity * gl_Color.x, diffuseLightIntensity * gl_Color.y, diffuseLightIntensity * gl_Color.z);
+	
 	// Sets the colour (which is passed to the fragment program) to the concatenation
 	// of the material colour and the diffuse light intensity.
 	varyingColour.rgb = diffuseLightIntensity * gl_Color;//gl_FrontMaterial.diffuse.rgb;
@@ -56,6 +62,8 @@ void main()
 	// Adds ambient colour to the colour so even the darkest part equals ambientColour.
 	varyingColour += gl_LightModel.ambient.rgb;
 
+	ambColor = gl_LightModel.ambient.rgb;
+	
 	// Calculates the direction of the reflectionDirection by using the method reflect, which takes 
 	// the normalized direction from the light source to the surface as the 1st parameter,
 	// and the normalized surface normal as the second. Since lightDirection points to
@@ -67,9 +75,13 @@ void main()
 	// in a scalar. Also checks if the value is negative. If so, the scalar is set to 0.0.
 	float specular = max(0.0, dot(surfaceNormal, reflectionDirection));
 	
-	if (diffuseLightIntensity != 0) {
+	if (diffuseLightIntensity != 0) 
+	{
 		// Enhances the specular scalar value by raising it to the exponent of the shininess.
 		float fspecular = pow(specular, gl_FrontMaterial.shininess);
+		
+		specColor = vec3(pow(specular, gl_FrontMaterial.shininess));
+		
 		// Adds the specular value to the colour.
 		varyingColour.rgb += vec3(fspecular, fspecular, fspecular);
 	}
