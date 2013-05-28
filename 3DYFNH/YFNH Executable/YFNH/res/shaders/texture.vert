@@ -27,7 +27,7 @@ varying vec3 ambColor;
 
 varying float texID;
 
-attribute int textureID;
+attribute float textureID;
 
 void main() 
 {
@@ -57,7 +57,7 @@ void main()
 	
 	// Sets the colour (which is passed to the fragment program) to the concatenation
 	// of the material colour and the diffuse light intensity.
-	varyingColour.rgb = diffuseLightIntensity * gl_Color;//gl_FrontMaterial.diffuse.rgb;
+	varyingColour.rgb = diffColor;//diffuseLightIntensity * gl_Color;//gl_FrontMaterial.diffuse.rgb;
 	
 	// Adds ambient colour to the colour so even the darkest part equals ambientColour.
 	varyingColour += gl_LightModel.ambient.rgb;
