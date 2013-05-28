@@ -18,5 +18,5 @@ void main()
 	{
 		gl_FragColor = vec4(ambColor, 1.0) + vec4(diffColor * vec3(texture2D(texture1, gl_TexCoord[0].st)) + specColor, 1.0);
     	//gl_FragColor += texture2D(texture1, gl_TexCoord[0].st);
-    }
+	}
 }

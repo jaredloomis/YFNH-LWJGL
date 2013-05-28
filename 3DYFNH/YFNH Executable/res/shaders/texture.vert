@@ -27,7 +27,7 @@ varying vec3 ambColor;
 
 varying float texID;
 
-attribute int textureID;
+attribute float textureID;
 
 void main() 
 {
