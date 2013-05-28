@@ -7,11 +7,8 @@ import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.glUseProgram;
 import net.future.material.Material;
-
 import org.lwjgl.BufferUtils;
 import static org.lwjgl.opengl.GL15.*;
 import org.lwjgl.util.vector.Vector2f;
@@ -26,6 +23,7 @@ public class OBJLoader
 	 * <li><b>Wavefront</b> .obj format</li>
 	 * <li>Triangulated faces</li>
 	 * <li>Normals included</li>
+	 * <li>One or no image files</li>
 	 * </ul>
 	 * 
 	 * @param f - The path of the .obj file
@@ -42,7 +40,7 @@ public class OBJLoader
 			List<Material> mats = new ArrayList<Material>();
 
 			String line;
-			while ((line = reader.readLine()) != null) 
+			while ((line = reader.readLine()) != null)
 			{
 				//Indicates a vertex
 				if (line.startsWith("v ")) 
@@ -72,13 +70,14 @@ public class OBJLoader
 				{
 					//If face is triangulated
 					if(line.split(" ").length == 4)
-					{
+					{			
 						Vector3f vertexIndices = new Vector3f(
 								Float.valueOf(line.split(" ")[1].split("/")[0]),
 								Float.valueOf(line.split(" ")[2].split("/")[0]),
 								Float.valueOf(line.split(" ")[3].split("/")[0]));
 
 
+						//Instantiate as null for scope reasons
 						Vector3f textureIndices = null;
 
 						if(!line.split(" ")[1].split("/")[1].equals("")&&!(line.split(" ")[1].split("/")[1].equals(null)))
@@ -92,43 +91,38 @@ public class OBJLoader
 								Float.valueOf(line.split(" ")[2].split("/")[2]),
 								Float.valueOf(line.split(" ")[3].split("/")[2]));
 
-						Face mf = null;
-						if(textureIndices!=null)
-							mf = new Face(vertexIndices, normalIndices, textureIndices);
-						else
-							mf = new Face(vertexIndices, normalIndices);
-						m.faces.add(mf);
+						Face mf = new Face();
 
 						//Instantiate all the arrays
 						mf.normals = new Vector3f[3];
 						mf.points = new Vector3f[3];
 
 						//// SETUP NORMALS ////
-						Vector3f n1 = m.norms.get((int) mf.normal[0] - 1);
+						Vector3f n1 = m.norms.get((int)normalIndices.x - 1);
 						mf.normals[0] = n1;
-						Vector3f n2 = m.norms.get((int) mf.normal[1] - 1);
+						Vector3f n2 = m.norms.get((int)normalIndices.y - 1);
 						mf.normals[1] = n2;
-						Vector3f n3 = m.norms.get((int) mf.normal[2] - 1);
+						Vector3f n3 = m.norms.get((int)normalIndices.z - 1);
 						mf.normals[2] = n3;
 
 						//// SETUP VERTICIES ////
-						Vector3f v1 = m.verts.get((int) mf.vertex[0] - 1);
+						Vector3f v1 = m.verts.get((int)vertexIndices.x - 1);
 						mf.points[0] = v1;
-						Vector3f v2 = m.verts.get((int) mf.vertex[1] - 1);
+						Vector3f v2 = m.verts.get((int)vertexIndices.y - 1);
 						mf.points[1] = v2;
-						Vector3f v3 = m.verts.get((int) mf.vertex[2] - 1);
+						Vector3f v3 = m.verts.get((int)vertexIndices.z - 1);
 						mf.points[2] = v3;
 
 						//// SETUP TEXTURE COORDS ////
-						if(mf.texture!=null)
+						if(textureIndices!=null)
 						{
 							mf.textureCoords = new Vector2f[3];
 
-							Vector2f t1 = m.textureCoords.get((int) mf.texture[0] - 1);
+							Vector2f t1 = m.textureCoords.get((int)textureIndices.x - 1);
 							mf.textureCoords[0] = t1;
-							Vector2f t2 = m.textureCoords.get((int) mf.texture[1] - 1);
+							Vector2f t2 = m.textureCoords.get((int)textureIndices.y - 1);
 							mf.textureCoords[1] = t2;
-							Vector2f t3 = m.textureCoords.get((int) mf.texture[2] - 1);
+							Vector2f t3 = m.textureCoords.get((int)textureIndices.z - 1);
 							mf.textureCoords[2] = t3;
 						}
 
@@ -142,6 +136,8 @@ public class OBJLoader
 
 						//Tell face to set up AABB
 						mf.setUpAABB();
+
+						m.faces.add(mf);
 					}
 				}
 				//Indicates a reference to an exterior .mtl file
@@ -186,6 +182,7 @@ public class OBJLoader
 	 * in an MTL file
 	 * 
 	 * @param f - The file to read from
+	 * @param m - A model, it's texture will be set to the last texture loaded. If not wanted, set to null.
 	 * @return a List< Material > containing all materials defined in the file
 	 */
 	public static List<Material> parseMTL(File f, Model m)
@@ -278,7 +275,7 @@ public class OBJLoader
 				}
 			}
 			reader.close();
-			
+
 			mats.add(mtl);
 		}
 		catch(FileNotFoundException e){e.printStackTrace();} 
@@ -292,6 +289,7 @@ public class OBJLoader
 	 * Creates the list that will be called to
 	 * draw the object
 	 */
+	/*
 	@Deprecated
 	public static int createDisplayList(Model m) 
 	{
@@ -362,7 +360,7 @@ public class OBJLoader
 								new Vector2f(0, 0),
 								new Vector2f(1, 0),
 								new Vector2f(0, 1)
-						};*/
+						};
 						if(face.textureCoords != null)
 							glTexCoord2f(face.textureCoords[0].x, face.textureCoords[0].y);
 
@@ -399,7 +397,7 @@ public class OBJLoader
 		}
 		glEndList();
 		return displayList;
-	}
+	}*/
 
 	private static FloatBuffer reserveData(int size) {
 		return BufferUtils.createFloatBuffer(size);
@@ -467,8 +465,6 @@ public class OBJLoader
 				textID.put(face.material.id);
 				textID.put(face.material.id);
 				textID.put(face.material.id);
-				if(face.material.id !=-1)
-					System.out.println(face.material.id);
 			}
 		}
 		vertices.flip();
@@ -476,7 +472,6 @@ public class OBJLoader
 		colors.flip();
 		textCoords.flip();
 		textID.flip();
-		
 
 		glBindBuffer(GL_ARRAY_BUFFER, vboVertexHandle);
 		glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
@@ -493,12 +488,12 @@ public class OBJLoader
 		glBindBuffer(GL_ARRAY_BUFFER, vboTexHandle);
 		glBufferData(GL_ARRAY_BUFFER, textCoords, GL_STATIC_DRAW);
 		glTexCoordPointer(2, GL_FLOAT, 0, 0L);
-		
+
 		glBindBuffer(GL_ARRAY_BUFFER, vboTexIDHandle);
 		glBufferData(GL_ARRAY_BUFFER, textID, GL_STATIC_DRAW);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		
+
 		return new Object[][]{
 				{vboVertexHandle, vertices}, 
 				{vboNormalHandle, normals}, 

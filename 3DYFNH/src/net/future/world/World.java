@@ -100,13 +100,13 @@ public class World
 							//Use the model's shader
 							glUseProgram(m.shader);
 
-							
+
 							int texIDVar = -1;
-							
+
 							if(m.texture!=null)
 							{
 								GL13.glActiveTexture(GL13.GL_TEXTURE0);
-								
+
 								m.texture.bind();
 
 								//Find the "memory address" of texture_diffuse uniform in shader
@@ -114,23 +114,23 @@ public class World
 
 								//Set the texture1 uniform equal to 0, telling it to use GL_TEXTURE0 
 								glUniform1i(loc, 0);
-								
+
 								//Find the "memory address" of textureID attribute in shader
 								texIDVar = glGetAttribLocation(m.shader, "textureID");
-								
+
 								//System.out.println(m.textID.position()+"/"+m.textID.capacity()+" --- "+m.textID.get());
-								
+
 								//// Set Data for Texture IDs ////
 								glBindBuffer(GL_ARRAY_BUFFER, m.vboTexIDHandle);
 								glVertexAttribPointer(texIDVar, 1, GL11.GL_FLOAT, false, 0, 0);
-								
+
 								//Enable the VBO to use this attribute variable
 								glEnableVertexAttribArray(texIDVar);
-								
+
 								//// Set Data for Texture Coordinates ////
 								glBindBuffer(GL_ARRAY_BUFFER, m.vboTexHandle);
 								glTexCoordPointer(2, GL_FLOAT, 0, 0L);
-								
+
 								//Enable the VBO to use texture coords
 								glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 							}

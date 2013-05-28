@@ -2,7 +2,7 @@ package net.future.model;
 
 import org.lwjgl.util.vector.Vector3f;
 
-public class AABB 
+public class AABB
 {
 	public Vector3f min;
 	public Vector3f max;
@@ -33,6 +33,14 @@ public class AABB
 						);
 			}
 		}
+	}
+	
+	/**
+	 * Get length, width and height of AABB
+	 */
+	public Vector3f getDimensions()
+	{
+		return Vector3f.sub(this.max, this.min, null);
 	}
 	
 	public AABB(AABB box, Vector3f offset)

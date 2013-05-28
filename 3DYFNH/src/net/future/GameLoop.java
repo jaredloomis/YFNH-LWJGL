@@ -224,7 +224,7 @@ public class GameLoop
 
 		//Updates location of Orgin
 		glLoadIdentity();
-				
+		
 		//Moves the camera, Uses the player camera, ect.
 		p.cameraUpdate();
 		

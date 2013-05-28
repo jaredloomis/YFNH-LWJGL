@@ -19,8 +19,8 @@ public class ModelPoint extends Model
 		f.points[0] = this.verts.get(0);
 		f.points[1] = this.verts.get(1);
 		f.points[2] = this.verts.get(2);
-		f.vertex = new float[]{1, 2, 3};
-		f.normal = new float[]{1, 2, 3};
+		//f.vertex = new float[]{1, 2, 3};
+		//f.normal = new float[]{1, 2, 3};
 		this.faces.add(f);
 	}
 }

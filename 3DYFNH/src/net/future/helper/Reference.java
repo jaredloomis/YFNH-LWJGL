@@ -14,5 +14,5 @@ public class Reference
 	public static String pixelFrag = "res/shaders/pixelFrag.shader";
 	public static String textureVert = "res/shaders/texture.vert";
 	public static String textureFrag = "res/shaders/texture.frag";
-	public static Model bunny = OBJLoader.loadModel(new File("res/models/Ibanez/Ibanez.obj")).setShininess(128)/*.setTexture("res/textures/BasicBlock.png")*/.setShader(ShaderLoader.loadShaderPair(textureVert, textureFrag)).setName("Bunny").setUpAABB().setScale(0.1f).setUpVBO();
+	public static Model bunny = OBJLoader.loadModel(new File("res/models/Ibanez/Ibanez.obj")).setShininess(128).setShader(ShaderLoader.loadShaderPair(textureVert, textureFrag)).setName("Bunny").setUpAABB().setScale(0.1f).setUpVBO();
 }
