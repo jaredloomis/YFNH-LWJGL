@@ -24,7 +24,7 @@ public class GameLoop
 	private int updateRate = 80;
 	private static int lastFPS=0;
 	private static int fps = 0;
-	private UnicodeFont font;
+	public UnicodeFont font;
 	private static float lastFrame = 0;
 	private FloatBuffer perspectiveProjectionMatrix = BufferUtils.createFloatBuffer(16);
 	private FloatBuffer orthographicProjectionMatrix = BufferUtils.createFloatBuffer(16);
@@ -34,7 +34,7 @@ public class GameLoop
 	 * Initial set-up, called once from Driver class
 	 */
 	public void initialize()
-	{
+	{	
 		//Init the time variables
 		lastFrame=getTime();
 		getTime();
@@ -100,7 +100,7 @@ public class GameLoop
 
 		//Tell OpenGL to use the most correct, or highest quality, option when deciding
 		//on Gl_PERSEPECTIVE_CORRECTION details. Other choices are GL_FASTEST and GL_DONT_CARE
-		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 
 		//Enables 3D and depth. Also enables
 		//Hardware acceleration
@@ -178,9 +178,11 @@ public class GameLoop
 	 */
 	private void render()
 	{
-		//Clears the screen so it can be drawn again
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		//Texture arial = MyTextureLoader.getTexture("res/fonts/Arial.png");
+		//arial.bind();
+		//FontHelper.renderString("Test", arial.getTextureID(), 16, -0.9f, 0, 0.3f, 0.225f);
+		/*
 		//Somehow, all this code allows Text to go on the screen....
 		glMatrixMode(GL_PROJECTION);
 		glLoadMatrix(orthographicProjectionMatrix);
@@ -205,6 +207,7 @@ public class GameLoop
 		glLoadMatrix(perspectiveProjectionMatrix);
 		glMatrixMode(GL_MODELVIEW);
 		p.cam.applyPerspectiveMatrix();
+		*/
 	}
 
 	/**

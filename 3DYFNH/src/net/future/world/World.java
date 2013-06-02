@@ -4,6 +4,7 @@ import java.util.List;
 import net.future.gameobject.GameObject;
 import net.future.gameobject.Light;
 import net.future.gameobject.ObjectBunny;
+import net.future.helper.Reference;
 import net.future.math.GeometryHelper;
 import net.future.model.Model;
 import net.future.player.Player;
@@ -29,9 +30,14 @@ public class World
 		this.paused = false;
 
 		cube = new ObjectBunny(this);
-		cube.position = new Vector3f(0, -10, 0);
+		cube.position = new Vector3f(0, 0, 0);
 		cube.name = "bunny";
 		this.add(cube);
+		
+		GameObject test = new GameObject(this, Reference.test);
+		test.position = new Vector3f(3, 0, 0);
+		test.name = "test";
+		this.add(test);
 
 		Light l1 = new Light(this, GL11.GL_LIGHT0, new float[]{0.5f,0.5f,0.5f,1}, new float[]{0.5f,0.5f,0.5f,1}, new float[]{0.01f, 0.01f, 0.01f, 1});
 		l1.init();
@@ -43,7 +49,7 @@ public class World
 	 * Moves and draws all objects.
 	 */
 	public void update()
-	{
+	{	
 		for(int i = 0; i < objects.size(); i++)
 		{
 			GameObject cur = this.objects.get(i);
@@ -60,7 +66,7 @@ public class World
 						//WHAT WAY TO RENDER
 						int renderType = 1;
 
-						//renderType 0 means use display lists (DEPRECATED)
+						//renderType 0 means use display lists (DEPRECATED) NOT EVEN POSSIBLE ANYMORE
 						if(renderType==0)
 						{
 							Model m = cur.model;
@@ -85,7 +91,7 @@ public class World
 						}
 						//renderType 1 means use VBOs (Faster, better, cooler)
 						else if(renderType==1)
-						{
+						{	
 							Model m = cur.model;
 
 							//Move the object
@@ -95,7 +101,7 @@ public class World
 							glMaterialf(GL_FRONT, GL_SHININESS, m.shininess);
 
 							//Set the color
-							glColor3f(cur.color[0], cur.color[1], cur.color[2]);
+							//glColor3f(cur.color[0], cur.color[1], cur.color[2]);
 
 							//Use the model's shader
 							glUseProgram(m.shader);
@@ -105,26 +111,52 @@ public class World
 
 							if(m.texture!=null)
 							{
-								GL13.glActiveTexture(GL13.GL_TEXTURE0);
+								//OpenGL can't handle more than about 30 GL_TEXTUREX s, depending
+								//upon version and stuff
+								if(m.textures.size()<7)
+									for(int j = 0; j < m.textures.size(); j++)
+									{
+										GL13.glActiveTexture(GL13.GL_TEXTURE0+j);
+										GL11.glBindTexture(GL11.GL_TEXTURE_2D, m.textures.get(j).getTextureID());
+										//m.textures.get(j).bind();
+									}
 
-								m.texture.bind();
+								//TODO Fix/Remove
+								if(texIDVar != -1)
+								{
+									GL13.glActiveTexture(GL13.GL_TEXTURE0);
 
-								//Find the "memory address" of texture_diffuse uniform in shader
+									m.texture.bind();
+								}
+
+								//Find the "memory address" of texture1 uniform in shader
 								int loc = glGetUniformLocation(m.shader, "texture1");
 
 								//Set the texture1 uniform equal to 0, telling it to use GL_TEXTURE0 
 								glUniform1i(loc, 0);
 
+								//Set the shader's "textures[10]" array equal to {0, 1, 2, 3, 4, ect.}
+								//Cannot set as constant in shader because sampler2D s must be set by
+								//Java code as a Uniform
+								for(int j = 0; j < m.textures.size(); j++)
+								{
+									//Find the "memory address" of textures sampler2D's specified index uniform in shader
+									int loc2 = glGetUniformLocation(m.shader, "textures["+j+"]");
+									
+									//Set it to current number
+									glUniform1i(loc2, j);
+								}
+
+								//System.out.println(m.textID.position() + "---" + m.textID.get());
+
 								//Find the "memory address" of textureID attribute in shader
 								texIDVar = glGetAttribLocation(m.shader, "textureID");
 
-								//System.out.println(m.textID.position()+"/"+m.textID.capacity()+" --- "+m.textID.get());
-
 								//// Set Data for Texture IDs ////
 								glBindBuffer(GL_ARRAY_BUFFER, m.vboTexIDHandle);
-								glVertexAttribPointer(texIDVar, 1, GL11.GL_FLOAT, false, 0, 0);
+								glVertexAttribPointer(texIDVar, 1, GL_FLOAT, false, 0, 0);
 
-								//Enable the VBO to use this attribute variable
+								//Enable the VBO to use this attribute
 								glEnableVertexAttribArray(texIDVar);
 
 								//// Set Data for Texture Coordinates ////

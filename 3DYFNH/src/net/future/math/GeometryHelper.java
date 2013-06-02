@@ -1,22 +1,22 @@
 package net.future.math;
 import net.future.gameobject.GameObject;
-import net.future.helper.Debug;
 import net.future.model.AABB;
 import net.future.model.Face;
 import net.future.model.Model;
-
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 public class GeometryHelper 
 {
 	/**
+	 * @deprecated Not necessary to use <br/><br/>
 	 * Determines the slope of specified face
 	 * 
 	 * @param f - The face
 	 * 
 	 * @return A Vector3f with the change of the x, y, and z axes
 	 */
+	@Deprecated
 	public static Vector3f getSlope(Face f)
 	{
 		Vector3f p1 = f.points[0];
@@ -120,11 +120,9 @@ public class GeometryHelper
 					Face f2 = m2.faces.get(j);
 					AABB adjAB2 = new AABB(f2.boundingBox, obj2.position);
 
-					//TODO FIX OBVIOUSLY
-					if(adjAB1.intersecting(adjAB2)&&i!=1)
+					//for some reason the 
+					if(adjAB1.intersecting(adjAB2)&&j!=0)
 					{
-						Debug.println("FACES: " + adjAB1 + " : " + adjAB2);
-						Debug.println("MODELS: " + adjMAB1 + " : " + adjMAB2);
 						return true;
 					}
 				}

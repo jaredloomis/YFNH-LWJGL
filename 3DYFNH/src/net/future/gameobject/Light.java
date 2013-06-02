@@ -43,9 +43,9 @@ public class Light extends GameObject
 		//Uncommenting the code below makes everything darker...
 		glLight(id, GL_POSITION, lightPosition);	
 		glLightModel(GL_LIGHT_MODEL_AMBIENT, ambientInt);
-		//glLight(id, GL_AMBIENT, ambientInt);
-		//glLight(id, GL_SPECULAR, specInt);				
-		//glLight(id, GL_DIFFUSE, diffInt);
+		glLight(id, GL_AMBIENT, ambientInt);
+		glLight(id, GL_SPECULAR, specInt);				
+		glLight(id, GL_DIFFUSE, diffInt);
 		
 		glEnable(id);
 		//glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);

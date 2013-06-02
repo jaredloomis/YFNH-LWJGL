@@ -19,48 +19,36 @@
 // Specular lighting: 
 ///////////////END NOTES////////////////////////////
 
-varying vec3 varyingColour;
+//varying vec3 varyingColour;
 
 varying vec3 specColor;
 varying vec3 diffColor;
 varying vec3 ambColor;
 
-varying float texID;
+varying int texID;
 
-attribute float textureID;
+attribute int textureID;
 
 void main() 
-{
-	texID = textureID;
-	
-	// Retrieves the position of the vertex in eye space by 
-	// multiplying the vertex in object space with the 
-	// modelview matrix and stores it in a 3D vertex.
+{	
+	//Set position of vertex
 	vec3 vertexPosition = (gl_ModelViewMatrix * gl_Vertex).xyz;
 	
-	// Retrieves the direction of the light and stores it in a 
-	// normalized 3D vector (normalized = length of 1).
+	//Direction of light, normalized
 	vec3 lightDirection = normalize(gl_LightSource[0].position.xyz - vertexPosition);
 	
-	// Retrieves the surface normal by multiplying the normal
-	// by the normal matrix. If you don't use non-uniform scaling
-	// operations you could also do: '= gl_Normal.xyz;'.
+	//Normal of vertex
 	vec3 surfaceNormal  = (gl_NormalMatrix * gl_Normal).xyz;
 
-	// Retrieves the intensity of the diffuse light by taking the dot-product of 
-	// the surface normal and the light direction vectors and stores the value in a scalar. 
-	// If the value is lower than 0, the light is messed up and we don't want
-	// to show it.
+	//Light's diffuse intensity
 	float diffuseLightIntensity = max(0, dot(surfaceNormal, lightDirection));
+	
+	//Set the color
+	//varyingColour.rgb = diffuseLightIntensity * gl_Color;
 	
 	diffColor = diffuseLightIntensity * gl_Color;
 	
-	// Sets the colour (which is passed to the fragment program) to the concatenation
-	// of the material colour and the diffuse light intensity.
-	varyingColour.rgb = diffuseLightIntensity * gl_Color;//gl_FrontMaterial.diffuse.rgb;
-	
-	// Adds ambient colour to the colour so even the darkest part equals ambientColour.
-	varyingColour += gl_LightModel.ambient.rgb;
+	//varyingColour += gl_LightModel.ambient.rgb;
 
 	ambColor = gl_LightModel.ambient.rgb;
 	
@@ -83,12 +71,17 @@ void main()
 		specColor = vec3(pow(specular, gl_FrontMaterial.shininess));
 		
 		// Adds the specular value to the colour.
-		varyingColour.rgb += vec3(fspecular, fspecular, fspecular);
+		//varyingColour.rgb += vec3(fspecular, fspecular, fspecular);
 	}
 
-	gl_TexCoord[0] = gl_MultiTexCoord0;
+	const vec4[8] multiTexCoords = {gl_MultiTexCoord0, gl_MultiTexCoord1, gl_MultiTexCoord2, gl_MultiTexCoord3, gl_MultiTexCoord4, gl_MultiTexCoord5, gl_MultiTexCoord6, gl_MultiTexCoord7 };
+	//gl_TexCoord[0] = gl_MultiTexCoord0;
+	//gl_TexCoord[1] = gl_MultiTexCoord1;
+	gl_TexCoord[texID] = multiTexCoords[texID];
 
 	// Retrieves the position of the vertex in clip space by multiplying it by the modelview-
 	// projection matrix and stores it in the built-in output variable gl_Position.
     gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+    
+    texID = textureID;
 }

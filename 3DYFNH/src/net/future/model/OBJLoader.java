@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import static org.lwjgl.opengl.GL11.*;
@@ -130,8 +131,8 @@ public class OBJLoader
 						if(cur != null)
 						{
 							mf.material = cur;
-							if(cur.texture!=null)
-								;//m.texture = cur.texture;
+							//if(cur.texture!=null)
+								//m.texture = cur.texture;
 						}
 
 						//Tell face to set up AABB
@@ -168,6 +169,9 @@ public class OBJLoader
 
 			//Tell model to set up AABB
 			m.setUpAABB();
+			
+			//Remove the first element, because...
+			m.faces.remove(0);
 
 			return m;
 
@@ -188,8 +192,7 @@ public class OBJLoader
 	public static List<Material> parseMTL(File f, Model m)
 	{
 		List<Material> mats = new ArrayList<Material>();
-		@SuppressWarnings("unused")
-		int matNum = 0;
+		int matNum = -1;
 
 		try{
 			BufferedReader reader = new BufferedReader(new FileReader(f));
@@ -210,7 +213,7 @@ public class OBJLoader
 					//Make mtl a new material and set name and id
 					mtl = new Material();
 					mtl.name = line.split(" ")[1];
-					mtl.id = 1;
+					mtl.id = -1;
 				}
 				//Specifying ambient color of material
 				else if(line.startsWith("Ka "))
@@ -254,12 +257,13 @@ public class OBJLoader
 				//Specifying diffuse texture map
 				else if(line.startsWith("map_Kd "))
 				{
+					matNum++;
 					//Set the material's texture to specified texture
 					mtl.texture = MyTextureLoader.getTexture(f.getParentFile() + File.separator + line.split(" ")[1]);
+					m.textures.add(mtl.texture);
 					m.texture = mtl.texture;
-					mtl.id = 0;
-					//mtl.id = matNum;
-					matNum++;
+					mtl.id = matNum;
+					m.temp.add(matNum);
 				}
 				//Specifying specular texture map
 				//TODO add support for specular texture map
@@ -284,121 +288,6 @@ public class OBJLoader
 		return mats;
 	}
 
-
-	/**
-	 * Creates the list that will be called to
-	 * draw the object
-	 */
-	/*
-	@Deprecated
-	public static int createDisplayList(Model m) 
-	{
-		int displayList = glGenLists(1);
-		glNewList(displayList, GL_COMPILE);
-		{
-			//Make model shiny according to the
-			//Model.shininess variable
-			glMaterialf(GL_FRONT, GL_SHININESS, m.shininess);
-
-			//Use the model's shader
-			glUseProgram(m.shader);
-
-			//If the faces are triangulated
-			if(m.faces.get(0).vertex.length == 3)
-			{
-				glBegin(GL_TRIANGLES);
-
-				//If the model does not have a texture
-				if(m.texture == null)
-				{
-					for (Face face : m.faces) 
-					{
-						//Make the array of normals and points
-						//as large as is needed
-						//face.normals = new Vector3f[3];
-						//face.points = new Vector3f[3];
-
-						//1. Set the normal and give it to OpenGL
-						Vector3f n1 = m.norms.get((int) face.normal[0] - 1);
-						glNormal3f(n1.x, n1.y, n1.z);
-
-						//2. Add it to the face's normals array
-						//face.normals[0] = n1;		
-
-						//3. Set the vertex and give it to OpenGL
-						Vector3f v1 = m.verts.get((int) face.vertex[0] - 1);
-						glVertex3f(v1.x, v1.y, v1.z);
-
-						//4. Add it to the face's vertices array
-						//face.points[0] = v1;
-
-						Vector3f n2 = m.norms.get((int) face.normal[1] - 1);
-						glNormal3f(n2.x, n2.y, n2.z);
-						//face.normals[1] = n2;
-						Vector3f v2 = m.verts.get((int) face.vertex[1] - 1);
-						glVertex3f(v2.x, v2.y, v2.z);
-						//face.points[1] = v2;
-
-						Vector3f n3 = m.norms.get((int) face.normal[2] - 1);
-						glNormal3f(n3.x, n3.y, n3.z);
-						//face.normals[2] = n3;
-						Vector3f v3 = m.verts.get((int) face.vertex[2] - 1);
-						glVertex3f(v3.x, v3.y, v3.z);
-						//face.points[2] = v3;
-					}
-				}
-				//If the model has a texture
-				else
-				{
-					//m.texture.bind();
-
-					for (Face face : m.faces) 
-					{
-						//face.normals = new Vector3f[3];
-						//face.points = new Vector3f[3];
-						/*Vector2f[] textureCoords = new Vector2f[]{
-								new Vector2f(0, 0),
-								new Vector2f(1, 0),
-								new Vector2f(0, 1)
-						};
-						if(face.textureCoords != null)
-							glTexCoord2f(face.textureCoords[0].x, face.textureCoords[0].y);
-
-						Vector3f n1 = m.norms.get((int) face.normal[0] - 1);
-						glNormal3f(n1.x, n1.y, n1.z);
-
-						Vector3f v1 = m.verts.get((int) face.vertex[0] - 1);
-						glVertex3f(v1.x, v1.y, v1.z);
-
-
-						if(face.textureCoords != null)
-							glTexCoord2f(face.textureCoords[1].x, face.textureCoords[1].y);
-
-						Vector3f n2 = m.norms.get((int) face.normal[1] - 1);
-						glNormal3f(n2.x, n2.y, n2.z);
-						//face.normals[1] = n2;
-						Vector3f v2 = m.verts.get((int) face.vertex[1] - 1);
-						glVertex3f(v2.x, v2.y, v2.z);
-						//face.points[1] = v2;
-
-						if(face.textureCoords != null)
-							glTexCoord2f(face.textureCoords[2].x, face.textureCoords[2].y);
-
-						Vector3f n3 = m.norms.get((int) face.normal[2] - 1);
-						glNormal3f(n3.x, n3.y, n3.z);
-						//face.normals[2] = n3;
-						Vector3f v3 = m.verts.get((int) face.vertex[2] - 1);
-						glVertex3f(v3.x, v3.y, v3.z);
-						//face.points[2] = v3;
-					}
-				}
-				glEnd();
-			}
-		}
-		glEndList();
-		return displayList;
-	}*/
-
 	private static FloatBuffer reserveData(int size) {
 		return BufferUtils.createFloatBuffer(size);
 	}
@@ -418,10 +307,12 @@ public class OBJLoader
 	 * 	<li>return[0][1] - vboNormalHandle:int</li>
 	 * 	<li>return[0][2] - vboTextureHandle:int</li>
 	 *  <li>return[0][3] - vboColorHandle:int</li>
+	 *  <li>return[0][4] - vboTexIDHandle:int</li>
 	 * 	<li>return[1][0] - vertices:FloatBuffer</li>
 	 * 	<li>return[1][1] - normals:FloatBuffer</li>
 	 * 	<li>return[1][2] - textureCoordinates:FloatBuffer</li>
 	 *  <li>return[1][3] - colors:FloatBuffer</li>
+	 *  <li>return[1][4] - textureID:FloatBuffer</li>
 	 * </ul>
 	 */
 	public static Object[][] createVBO(Model model) 
@@ -436,7 +327,7 @@ public class OBJLoader
 		FloatBuffer normals = reserveData(model.faces.size() * 9);
 		FloatBuffer colors = reserveData(model.faces.size() * 9);
 		FloatBuffer textCoords = reserveData(model.faces.size() * 6);
-		FloatBuffer textID = reserveData(model.faces.size() * 3);
+		IntBuffer textID = BufferUtils.createIntBuffer(model.faces.size() * 3);//reserveData(model.faces.size() * 3);
 
 		for (Face face : model.faces)
 		{

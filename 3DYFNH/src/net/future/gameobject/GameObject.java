@@ -42,6 +42,16 @@ public class GameObject
 		this.velocity = new Vector3f(0, 0, 0);
 	}
 	
+	public GameObject(World world, Model model)
+	{
+		this.world = world;
+		this.position = new Vector3f(0, 0, 0);
+		this.rotation = new Vector3f(0, 0, 0);
+		this.velocity = new Vector3f(0, 0, 0);
+		this.name = "Default";
+		this.model = model;
+	}
+	
 	public GameObject(World world, Model model, float[] color)
 	{
 		this.world = world;

@@ -1,5 +1,6 @@
 package net.future.model;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import org.lwjgl.opengl.GL11;
@@ -9,7 +10,9 @@ import org.newdawn.slick.opengl.Texture;
 
 public class Model 
 {
+	public List<Integer> temp = new ArrayList<Integer>();
 	public Texture texture;
+	public List<Texture> textures = new ArrayList<Texture>();
 	public int shader = 0;
 	public List<Vector3f> verts = new ArrayList<Vector3f>();
 	public List<Vector3f> norms = new ArrayList<Vector3f>();
@@ -29,7 +32,7 @@ public class Model
 	public FloatBuffer normal;
 	public FloatBuffer text;
 	public FloatBuffer color;
-	public FloatBuffer textID;
+	public IntBuffer textID;
 
 	public float shininess;
 
@@ -52,7 +55,7 @@ public class Model
 		this.normal = (FloatBuffer)vbos[1][1];
 		this.text = (FloatBuffer)vbos[2][1];
 		this.color = (FloatBuffer)vbos[3][1];
-		this.textID = (FloatBuffer)vbos[4][1];
+		this.textID = (IntBuffer)vbos[4][1];
 
 		return this;
 	}

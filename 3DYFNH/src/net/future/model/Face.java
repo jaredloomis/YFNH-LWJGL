@@ -9,13 +9,6 @@ public class Face
 {
 	public Material material;
 	
-	//These float arrays are not the actual points!
-	//They are used to speed up the model loading process.
-	//Use the VectorXf variables instead 
-	//public float[] vertex;
-	//public float[] normal;
-	//public float[] texture;
-	
 	public Vector2f[] textureCoords;
 	public Vector3f[] points;
 	public Vector3f[] normals;
