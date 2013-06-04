@@ -1,5 +1,6 @@
 package net.future.gameobject;
 import static org.lwjgl.opengl.GL11.*;
+
 import java.nio.FloatBuffer;
 import org.lwjgl.BufferUtils;
 import net.future.world.World;
@@ -29,18 +30,23 @@ public class Light extends GameObject
 	@Override
 	public void update()
 	{
+		//glPushAttrib(GL_TRANSFORM_BIT);
+		//glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, 1.0f);
+		//glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, 1.0f);
+
+		//glLightModeli(GL12.GL_LIGHT_MODEL_COLOR_CONTROL, GL12.GL_SEPARATE_SPECULAR_COLOR);
+		
 		glLight(id, GL_POSITION, lightPosition);	
 		glLightModel(GL_LIGHT_MODEL_AMBIENT, ambientInt);
-		//Uncommenting the code below makes everything darker...
 		glLight(id, GL_AMBIENT, ambientInt);
 		glLight(id, GL_SPECULAR, specInt);				
 		glLight(id, GL_DIFFUSE, diffInt);
+		//glPopAttrib();
 	}
 	
 	public void init() 
 	{
 		initLightArrays();
-		//Uncommenting the code below makes everything darker...
 		glLight(id, GL_POSITION, lightPosition);	
 		glLightModel(GL_LIGHT_MODEL_AMBIENT, ambientInt);
 		glLight(id, GL_AMBIENT, ambientInt);

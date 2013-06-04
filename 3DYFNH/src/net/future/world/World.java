@@ -111,8 +111,7 @@ public class World
 
 							if(m.texture!=null)
 							{
-								//OpenGL can't handle more than about 30 GL_TEXTUREX s, depending
-								//upon version and stuff
+								//OpenGL can't handle more than 7 GL_TEXTUREX s usiong this method
 								if(m.textures.size()<7)
 									for(int j = 0; j < m.textures.size(); j++)
 									{
@@ -120,20 +119,6 @@ public class World
 										GL11.glBindTexture(GL11.GL_TEXTURE_2D, m.textures.get(j).getTextureID());
 										//m.textures.get(j).bind();
 									}
-
-								//TODO Fix/Remove
-								if(texIDVar != -1)
-								{
-									GL13.glActiveTexture(GL13.GL_TEXTURE0);
-
-									m.texture.bind();
-								}
-
-								//Find the "memory address" of texture1 uniform in shader
-								int loc = glGetUniformLocation(m.shader, "texture1");
-
-								//Set the texture1 uniform equal to 0, telling it to use GL_TEXTURE0 
-								glUniform1i(loc, 0);
 
 								//Set the shader's "textures[10]" array equal to {0, 1, 2, 3, 4, ect.}
 								//Cannot set as constant in shader because sampler2D s must be set by
@@ -201,6 +186,15 @@ public class World
 							}
 							glDisableClientState(GL_COLOR_ARRAY);
 							glDisableClientState(GL_NORMAL_ARRAY);
+							
+							//Unbind all textures
+							if(m.textures.size()<7)
+								for(int j = 0; j < m.textures.size(); j++)
+								{
+									GL13.glActiveTexture(GL13.GL_TEXTURE0+j);
+									GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+									//m.textures.get(j).bind();
+								}
 						}
 
 						//Resets the array buffer, shader, texture, and color to default values
@@ -219,7 +213,7 @@ public class World
 			if(!paused)
 				cur.update();
 		}
-
+		
 		//Call the update method for all lights in scene
 		for(int i =0; i < this.lights.length; i++)
 		{

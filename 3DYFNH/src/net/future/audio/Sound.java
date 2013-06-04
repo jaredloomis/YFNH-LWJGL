@@ -31,4 +31,17 @@ public class Sound
 
 		SoundStore.get().poll(0);
 	}
+	
+	public void toggle()
+	{
+		if(audio.isPlaying())
+			audio.stop();
+		else
+			this.play();
+	}
+	
+	public void stop()
+	{
+		audio.stop();
+	}
 }

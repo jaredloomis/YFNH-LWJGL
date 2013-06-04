@@ -182,7 +182,6 @@ public class GameLoop
 		//Texture arial = MyTextureLoader.getTexture("res/fonts/Arial.png");
 		//arial.bind();
 		//FontHelper.renderString("Test", arial.getTextureID(), 16, -0.9f, 0, 0.3f, 0.225f);
-		/*
 		//Somehow, all this code allows Text to go on the screen....
 		glMatrixMode(GL_PROJECTION);
 		glLoadMatrix(orthographicProjectionMatrix);
@@ -190,24 +189,26 @@ public class GameLoop
 		glPushMatrix();
 		glLoadIdentity();
 		glDisable(GL_LIGHTING);
-		//Draw Text
-		FontHelper.drawCrosshair(font);
+		//// BEGIN DRAW TEXT ///
 
 		//Draw Pause Menu Text if game is paused
 		if(this.w.paused)
 			FontHelper.pauseMenu(this.font, this.p);
+		else
+			//If game is not paused, draw a crosashair
+			FontHelper.drawCrosshair(font);
 
 		//Draw Debug screen if debug is on
 		if(this.p.debugMenu)
 			FontHelper.debugMenu(this.font, this.p, getFPS());
-
+		
+		//// END DRAW TEXT ///
 		glEnable(GL_LIGHTING);
 		glPopMatrix();
 		glMatrixMode(GL_PROJECTION);
 		glLoadMatrix(perspectiveProjectionMatrix);
 		glMatrixMode(GL_MODELVIEW);
 		p.cam.applyPerspectiveMatrix();
-		*/
 	}
 
 	/**

@@ -34,6 +34,7 @@ public class Player extends GameObject
 	{
 		//Updates which keys are down, pressed, ect
 		in.update();
+		
 		boolean pausePressed = in.getKeypress(pause);
 
 		//Player must always be able to pause
@@ -67,7 +68,8 @@ public class Player extends GameObject
 		//Toggle debug screen
 		if(in.getKeypress(debugButton))
 		{
-			AudioManager.infiniteRegression.play();
+			AudioManager.infiniteRegression.toggle();
+			
 			if(debugMenu)
 				debugMenu=false;
 			else
@@ -92,13 +94,7 @@ public class Player extends GameObject
 	public void cameraUpdate()
 	{
 		//Use the player's camera
-		//this.cam.applyOptimalStates();
 		this.cam.applyTranslations();
-		//glMatrixMode(GL_MODELVIEW);
-		//glPushMatrix();
-		//glLoadIdentity();
-		//glPopMatrix();
-		//this.cam.applyPerspectiveMatrix();
 	}
 
 	@Override

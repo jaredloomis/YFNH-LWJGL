@@ -29,9 +29,9 @@ public class GameObject
 	{
 		this.model = new Model();
 		this.model.faces.add(new Face(
-				new Vector3f(0.05f, 0, 0),
+				new Vector3f(0.05f, 0.2f, -0.05f),
 				new Vector3f(0, -0.2f, 0),
-				new Vector3f(0, 0, 0.05f)
+				new Vector3f(-0.05f, 0, 0.05f)
 				));
 		this.model.faces.get(0).setUpAABB();
 		this.model = this.model.setUpAABB();
@@ -61,8 +61,6 @@ public class GameObject
 		this.name = "Default";
 		this.color = color;
 		this.model = model;
-		if(model != null)
-			this.setUpList();
 	}
 	
 	public GameObject(World world, String model, float[] color)
@@ -74,8 +72,6 @@ public class GameObject
 		this.name = "Default";
 		this.color = color;
 		this.model = OBJLoader.loadModel(new File(model));
-		if(model != null)
-			this.setUpList();
 	}
 	
 	public GameObject(GameObject copy)
@@ -103,7 +99,7 @@ public class GameObject
 			this.physics.update(this);
 	}
 	
-	public void setUpList()
+	//public void setUpList()
 	{
 		//TODO uncomment this to enable display lists
 		//this.list = OBJLoader.createDisplayList(this.model);

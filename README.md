@@ -7,12 +7,10 @@ YFNH-LWJGL
 
 - Single-imaged textured models fix
 
-- Collision detection fix
+- <del>Collision detection fix</del>
 
 - Save Games
 
-- Support for multi-image textured model<br/>
-  or<br/>
-   A utility that converts multi-image textured models into single-image textured models
+- A utility that converts multi-image textured models into single-image textured models for better performance
 
 - Interleaved VBOs
